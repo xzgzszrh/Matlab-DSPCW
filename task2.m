@@ -30,7 +30,7 @@ if use_real
 end
 
 Ns = round(p.Fs / p.Rb);
-n_plot_bits = min(10, p.N);
+n_plot_bits = min(30, p.N);
 idx = 1:(n_plot_bits * Ns);
 t = (0:numel(s_noisy)-1)' / p.Fs;
 
