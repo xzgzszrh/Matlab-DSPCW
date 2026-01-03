@@ -43,15 +43,15 @@ if use_real
 end
 
 if use_real
-    FskHelpers.plot_bits(bits_a_hat_real, p.Rb, '任务3：信号A检测数据序列波形（filter）');
-    FskHelpers.plot_bits(bits_b_hat_real, p.Rb, '任务3：信号B检测数据序列波形（filter）');
-    FskHelpers.plot_bits_compare(bits_a, bits_a_hat_real, p.Rb, '任务3：信号A检测比特（filter）');
-    FskHelpers.plot_bits_compare(bits_b, bits_b_hat_real, p.Rb, '任务3：信号B检测比特（filter）');
+    FskHelpers.plot_bits(bits_a_hat_real, p.Rb, '任务3：信号A检测数据序列波形（因果滤波）');
+    FskHelpers.plot_bits(bits_b_hat_real, p.Rb, '任务3：信号B检测数据序列波形（因果滤波）');
+    FskHelpers.plot_bits_compare(bits_a, bits_a_hat_real, p.Rb, '任务3：信号A检测比特（因果滤波）');
+    FskHelpers.plot_bits_compare(bits_b, bits_b_hat_real, p.Rb, '任务3：信号B检测比特（因果滤波）');
 elseif use_ideal
-    FskHelpers.plot_bits(bits_a_hat_ideal, p.Rb, '任务3：信号A检测数据序列波形（filtfilt）');
-    FskHelpers.plot_bits(bits_b_hat_ideal, p.Rb, '任务3：信号B检测数据序列波形（filtfilt）');
-    FskHelpers.plot_bits_compare(bits_a, bits_a_hat_ideal, p.Rb, '任务3：信号A检测比特（filtfilt）');
-    FskHelpers.plot_bits_compare(bits_b, bits_b_hat_ideal, p.Rb, '任务3：信号B检测比特（filtfilt）');
+    FskHelpers.plot_bits(bits_a_hat_ideal, p.Rb, '任务3：信号A检测数据序列波形（零相位）');
+    FskHelpers.plot_bits(bits_b_hat_ideal, p.Rb, '任务3：信号B检测数据序列波形（零相位）');
+    FskHelpers.plot_bits_compare(bits_a, bits_a_hat_ideal, p.Rb, '任务3：信号A检测比特（零相位）');
+    FskHelpers.plot_bits_compare(bits_b, bits_b_hat_ideal, p.Rb, '任务3：信号B检测比特（零相位）');
 end
 
 if use_real

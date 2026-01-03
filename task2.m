@@ -37,8 +37,8 @@ t = (0:numel(s_noisy)-1)' / p.Fs;
 figure;
 plot(t(idx), s_noisy(idx));
 grid on;
-xlabel('Time (s)'); ylabel('Amplitude');
-title('任务2：含噪FSK信号（前10位）');
+xlabel('时间(秒)'); ylabel('幅度');
+title('任务2：含噪FSK信号（前3位）');
 
 figure;
 if use_ideal && use_real
@@ -46,38 +46,38 @@ if use_ideal && use_real
     plot(t(idx), env_ideal(idx), 'b'); hold on;
     plot(t(idx), env_real(idx), 'r--');
     grid on;
-    xlabel('Time (s)'); ylabel('Envelope');
-    legend('filtfilt(理想)', 'filter(现实)');
-    title('任务2：包络对比（前10位）');
+    xlabel('时间(秒)'); ylabel('包络');
+    legend('零相位(理想)', '因果(现实)');
+    title('任务2：包络对比（前3位）');
 
     subplot(2, 1, 2);
     plot(t(idx), lp_ideal(idx), 'b'); hold on;
     plot(t(idx), lp_real(idx), 'r--');
     grid on;
-    xlabel('Time (s)'); ylabel('LP Output');
-    legend('filtfilt(理想)', 'filter(现实)');
-    title('任务2：低通输出对比（前10位）');
+    xlabel('时间(秒)'); ylabel('低通输出');
+    legend('零相位(理想)', '因果(现实)');
+    title('任务2：低通输出对比（前3位）');
 elseif use_ideal
     plot(t(idx), env_ideal(idx), 'b');
     grid on;
-    xlabel('Time (s)'); ylabel('Envelope');
-    title('任务2：包络（filtfilt, 前10位）');
+    xlabel('时间(秒)'); ylabel('包络');
+    title('任务2：包络（零相位，前3位）');
 elseif use_real
     plot(t(idx), env_real(idx), 'r');
     grid on;
-    xlabel('Time (s)'); ylabel('Envelope');
-    title('任务2：包络（filter, 前10位）');
+    xlabel('时间(秒)'); ylabel('包络');
+    title('任务2：包络（因果滤波，前3位）');
 end
 
 if use_real
-    FskHelpers.plot_bits(bits_hat_real, p.Rb, '任务2：检测数据序列波形（filter）');
-    FskHelpers.plot_bits_compare(bits, bits_hat_real, p.Rb, '任务2：检测比特（filter）');
+    FskHelpers.plot_bits(bits_hat_real, p.Rb, '任务2：检测数据序列波形（因果滤波）');
+    FskHelpers.plot_bits_compare(bits, bits_hat_real, p.Rb, '任务2：检测比特（因果滤波）');
     bits_str = char(bits_hat_real' + '0');
     fprintf('任务2检测数据序列(filter): ...%s...\n', bits_str);
 end
 if use_ideal && ~use_real
-    FskHelpers.plot_bits(bits_hat_ideal, p.Rb, '任务2：检测数据序列波形（filtfilt）');
-    FskHelpers.plot_bits_compare(bits, bits_hat_ideal, p.Rb, '任务2：检测比特（filtfilt）');
+    FskHelpers.plot_bits(bits_hat_ideal, p.Rb, '任务2：检测数据序列波形（零相位）');
+    FskHelpers.plot_bits_compare(bits, bits_hat_ideal, p.Rb, '任务2：检测比特（零相位）');
     bits_str = char(bits_hat_ideal' + '0');
     fprintf('任务2检测数据序列(filtfilt): ...%s...\n', bits_str);
 end
@@ -140,13 +140,13 @@ if use_real
     semilogy(snr_list, ber_list_real, '-s', 'LineWidth', 1.2);
 end
 grid on;
-xlabel('SNR (dB)'); ylabel('BER');
+xlabel('信噪比(dB)'); ylabel('误码率');
 if use_ideal && use_real
-    legend('filtfilt(理想)', 'filter(现实)');
+    legend('零相位(理想)', '因果(现实)');
 elseif use_ideal
-    legend('filtfilt(理想)');
+    legend('零相位(理想)');
 else
-    legend('filter(现实)');
+    legend('因果(现实)');
 end
-title('任务2：BER-SNR 曲线');
+title('任务2：误码率-信噪比曲线');
 end

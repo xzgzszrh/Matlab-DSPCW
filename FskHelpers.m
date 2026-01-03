@@ -64,7 +64,7 @@ classdef FskHelpers
             figure;
             stairs(t_bit, bits, 'LineWidth', 1.5);
             ylim([-0.2 1.2]); grid on;
-            xlabel('Time (s)'); ylabel('Bit');
+            xlabel('时间(秒)'); ylabel('比特');
             title(plot_title);
         end
 
@@ -75,8 +75,8 @@ classdef FskHelpers
             stairs(t_bit, bits_hat, 'LineWidth', 1.5); hold on;
             stairs(t_bit, bits, '--', 'LineWidth', 1.2);
             ylim([-0.2 1.2]); grid on;
-            xlabel('Time (s)'); ylabel('Bit');
-            legend('Detected', 'Original');
+            xlabel('时间(秒)'); ylabel('比特');
+            legend('检测', '原始');
             title(plot_title);
         end
 
@@ -84,7 +84,7 @@ classdef FskHelpers
             figure;
             plot(t, s);
             grid on;
-            xlabel('Time (s)'); ylabel('Amplitude');
+            xlabel('时间(秒)'); ylabel('幅度');
             title(plot_title);
         end
 
@@ -108,15 +108,25 @@ classdef FskHelpers
                 end
             end
             grid on;
-            xlabel('Time (s)'); ylabel('Amplitude');
+            xlabel('时间(秒)'); ylabel('幅度');
             title(plot_title);
-            legend('Bit=1', 'Bit=0');
+            legend('比特=1', '比特=0');
         end
 
         function plot_filter_response(filt_obj, Fs, plot_title)
             figure;
             freqz(filt_obj, 4096, Fs);
             title(plot_title);
+            ax = findall(gcf, 'Type', 'axes');
+            for k = 1:numel(ax)
+                xlabel(ax(k), '频率(Hz)');
+                ylab = get(get(ax(k), 'YLabel'), 'String');
+                if ischar(ylab) && contains(ylab, 'Phase')
+                    ylabel(ax(k), '相位(弧度)');
+                else
+                    ylabel(ax(k), '幅度(dB)');
+                end
+            end
         end
 
         function s_noisy = add_awgn(s, snr_db)
