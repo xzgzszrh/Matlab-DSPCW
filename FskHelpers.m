@@ -10,7 +10,7 @@ classdef FskHelpers
             t = (0:numel(s)-1)' / Fs;
         end
 
-        function bits_hat = fsk_demod_discriminator(s, Fs, Rb, f1, f0, bp, n_bits, lp, use_zero_phase)
+        function [bits_hat, x_bit] = fsk_demod_discriminator(s, Fs, Rb, f1, f0, bp, n_bits, lp, use_zero_phase)
             Ns = round(Fs / Rb);
             if nargin < 7
                 n_bits = floor(numel(s) / Ns);

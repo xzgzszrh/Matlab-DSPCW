@@ -25,8 +25,11 @@ if use_ideal
         s_noisy, p.Fs, p.Rb, bp, lp, true, p.N);
 end
 if use_real
-    [bits_hat_real, ~, env_real, lp_real] = FskHelpers.fsk_demod_energy( ...
+    [bits_hat_real, x_bit_real, env_real, lp_real] = FskHelpers.fsk_demod_energy( ...
         s_noisy, p.Fs, p.Rb, bp, lp, false, p.N);
+    [bits_real_ref, bits_hat_real] = align_bits(bits, bits_hat_real, x_bit_real);
+else
+    bits_real_ref = bits;
 end
 
 Ns = round(p.Fs / p.Rb);
@@ -71,7 +74,7 @@ end
 
 if use_real
     FskHelpers.plot_bits(bits_hat_real, p.Rb, '任务2：检测数据序列波形（因果滤波）');
-    FskHelpers.plot_bits_compare(bits, bits_hat_real, p.Rb, '任务2：检测比特（因果滤波）');
+    FskHelpers.plot_bits_compare(bits_real_ref, bits_hat_real, p.Rb, '任务2：检测比特（因果滤波，延时已对齐）');
     bits_str = char(bits_hat_real' + '0');
     fprintf('任务2检测数据序列(filter): ...%s...\n', bits_str);
 end
@@ -87,8 +90,8 @@ if use_ideal
     fprintf('任务2 BER(filtfilt) = %.6f (%d / %d errors)\n', ber_ideal, sum(bits_hat_ideal ~= bits), p.N);
 end
 if use_real
-    ber_real = mean(bits_hat_real ~= bits);
-    fprintf('任务2 BER(filter)   = %.6f (%d / %d errors)\n', ber_real, sum(bits_hat_real ~= bits), p.N);
+    ber_real = mean(bits_hat_real ~= bits_real_ref);
+    fprintf('任务2 BER(filter)   = %.6f (%d / %d errors)\n', ber_real, sum(bits_hat_real ~= bits_real_ref), numel(bits_real_ref));
 end
 
 % BER vs SNR curve
@@ -104,11 +107,12 @@ frames = 20;
 for k = 1:numel(snr_list)
     if use_ideal
         err_ideal = 0;
+        total_bits_ideal = 0;
     end
     if use_real
         err_real = 0;
+        total_bits_real = 0;
     end
-    total_bits = 0;
     for n = 1:frames
         bits_k = randi([0 1], p.N, 1);
         [s_k, ~] = FskHelpers.fsk_modulate(bits_k, p.Fs, p.Rb, p.f1a, p.f0a);
@@ -116,18 +120,20 @@ for k = 1:numel(snr_list)
         if use_ideal
             bits_hat_k_ideal = FskHelpers.fsk_demod_energy(s_k, p.Fs, p.Rb, bp, lp, true, p.N);
             err_ideal = err_ideal + sum(bits_hat_k_ideal ~= bits_k);
+            total_bits_ideal = total_bits_ideal + p.N;
         end
         if use_real
-            bits_hat_k_real = FskHelpers.fsk_demod_energy(s_k, p.Fs, p.Rb, bp, lp, false, p.N);
-            err_real = err_real + sum(bits_hat_k_real ~= bits_k);
+            [bits_hat_k_real, x_bit_k_real] = FskHelpers.fsk_demod_energy(s_k, p.Fs, p.Rb, bp, lp, false, p.N);
+            [bits_k_ref, bits_hat_k_real] = align_bits(bits_k, bits_hat_k_real, x_bit_k_real);
+            err_real = err_real + sum(bits_hat_k_real ~= bits_k_ref);
+            total_bits_real = total_bits_real + numel(bits_k_ref);
         end
-        total_bits = total_bits + p.N;
     end
     if use_ideal
-        ber_list_ideal(k) = err_ideal / total_bits;
+        ber_list_ideal(k) = err_ideal / total_bits_ideal;
     end
     if use_real
-        ber_list_real(k) = err_real / total_bits;
+        ber_list_real(k) = err_real / total_bits_real;
     end
 end
 
@@ -149,4 +155,29 @@ else
     legend('因果(现实)');
 end
 title('任务2：误码率-信噪比曲线');
+end
+
+function [bits_ref, bits_hat_adj] = align_bits(bits_ref, bits_hat, metric)
+    ref = double(bits_ref(:));
+    sig = double(metric(:));
+    ref = ref - mean(ref);
+    sig = sig - mean(sig);
+    maxlag = min(10, numel(ref) - 1);
+    if maxlag < 1
+        bits_hat_adj = bits_hat;
+        return;
+    end
+    [c, lags] = xcorr(sig, ref, maxlag);
+    [~, idx] = max(c);
+    lag = lags(idx);
+    if lag > 0
+        bits_hat_adj = bits_hat(lag+1:end);
+        bits_ref = bits_ref(1:end-lag);
+    elseif lag < 0
+        lag = -lag;
+        bits_hat_adj = bits_hat(1:end-lag);
+        bits_ref = bits_ref(lag+1:end);
+    else
+        bits_hat_adj = bits_hat;
+    end
 end

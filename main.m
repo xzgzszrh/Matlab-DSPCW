@@ -14,7 +14,7 @@ params.SNRdB = 10;          % noise level (dB), 0 means no noise⚠️
 
 params.N_total = 100000; % Task 4 total bits 正常应该是1e8 但是需要一个小时才能算完
 params.chunk_bits = 100;    % Task 4 latency
-params.exportPdf = true;    % true to export all figures to a single PDF
+params.exportPdf = false;    % true to export all figures to a single PDF
 params.exportPdfPath = 'results/figures.pdf';
 params.filterMode = 'both';  % 'filtfilt' | 'filter' | 'both'
 
