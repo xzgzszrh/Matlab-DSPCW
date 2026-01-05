@@ -12,7 +12,7 @@ params.f0a = 12e3;         % 信号A：比特0走12 kHz
 params.f1b = 6e3;          % 信号B：比特1走6 kHz
 params.f0b = 8e3;          % 信号B：比特0走8 kHz
 
-params.SNRdB = 10;         % 噪声强度(dB)，0就是不加噪
+params.SNRdB = 2;         % 噪声强度(dB)，0就是不加噪
 
 % 任务4的总比特数，正常应该上到1e8，但那得跑一小时，先缩小规模
 params.N_total = 100000;

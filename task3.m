@@ -23,9 +23,9 @@ FskHelpers.plot_fsk(t_a, s_mix, '任务3：叠加后的FSK信号');
 % 分别给A/B做带通，最后统一低通
 bp_a = FskHelpers.make_bandpass(p.Fs, 9e3, 13e3);
 bp_b = FskHelpers.make_bandpass(p.Fs, 5e3, 9e3);
-lp = FskHelpers.make_lowpass(p.Fs, p.Rb);
-FskHelpers.plot_filter_response(bp_a, p.Fs, '任务3：信号A带通滤波器频率响应');
-FskHelpers.plot_filter_response(bp_b, p.Fs, '任务3：信号B带通滤波器频率响应');
+bp_a_energy = FskHelpers.make_bandpass_fir(p.Fs, 9e3, 11e3);
+bp_b_energy = FskHelpers.make_bandpass_fir(p.Fs, 5e3, 7e3);
+lp_energy = FskHelpers.make_lowpass_fir(p.Fs, p.Rb);
 
 if isfield(p, 'filterMode')
     mode = lower(p.filterMode);
@@ -41,14 +41,23 @@ if ~use_ideal && ~use_real
 end
 
 if use_ideal
+    FskHelpers.plot_filter_response(bp_a, p.Fs, '任务3：信号A带通滤波器频率响应');
+    FskHelpers.plot_filter_response(bp_b, p.Fs, '任务3：信号B带通滤波器频率响应');
+end
+if use_real
+    FskHelpers.plot_filter_response(bp_a_energy, p.Fs, '任务3：信号A能量检测带通响应（10kHz）');
+    FskHelpers.plot_filter_response(bp_b_energy, p.Fs, '任务3：信号B能量检测带通响应（6kHz）');
+end
+
+if use_ideal
     % 理想版本：用鉴频器直接判比特
     bits_a_hat_ideal = FskHelpers.fsk_demod_discriminator(s_mix, p.Fs, p.Rb, p.f1a, p.f0a, bp_a, p.N, [], true);
     bits_b_hat_ideal = FskHelpers.fsk_demod_discriminator(s_mix, p.Fs, p.Rb, p.f1b, p.f0b, bp_b, p.N, [], true);
 end
 if use_real
     % 现实版本：能量检测 + 因果滤波
-    [bits_a_hat_real, x_a_real] = FskHelpers.fsk_demod_energy(s_mix, p.Fs, p.Rb, bp_a, lp, false, p.N);
-    [bits_b_hat_real, x_b_real] = FskHelpers.fsk_demod_energy(s_mix, p.Fs, p.Rb, bp_b, lp, false, p.N);
+    [bits_a_hat_real, x_a_real] = FskHelpers.fsk_demod_energy(s_mix, p.Fs, p.Rb, bp_a_energy, lp_energy, false, p.N);
+    [bits_b_hat_real, x_b_real] = FskHelpers.fsk_demod_energy(s_mix, p.Fs, p.Rb, bp_b_energy, lp_energy, false, p.N);
     % 对齐一下延迟，不然误码率会看起来偏大
     [bits_a_ref, bits_a_hat_real] = align_bits(bits_a, bits_a_hat_real, x_a_real);
     [bits_b_ref, bits_b_hat_real] = align_bits(bits_b, bits_b_hat_real, x_b_real);
@@ -96,6 +105,76 @@ if use_real
     fprintf('任务3 BER (A, filter)   = %.6f (%d / %d errors)\n', ber_a_real, sum(bits_a_hat_real ~= bits_a_ref), numel(bits_a_ref));
     fprintf('任务3 BER (B, filter)   = %.6f (%d / %d errors)\n', ber_b_real, sum(bits_b_hat_real ~= bits_b_ref), numel(bits_b_ref));
 end
+
+% 误码率-信噪比 曲线（和任务2一致：零相位 vs 因果）
+snr_list = -6:2:12;
+frames = 30;
+if use_ideal
+    ber_ideal_curve = zeros(size(snr_list));
+end
+if use_real
+    ber_real_curve = zeros(size(snr_list));
+end
+
+for k = 1:numel(snr_list)
+    if use_ideal
+        err_a_ideal = 0; err_b_ideal = 0; total_ideal = 0;
+    end
+    if use_real
+        err_a_real = 0; err_b_real = 0; total_a_real = 0; total_b_real = 0;
+    end
+    for n = 1:frames
+        bits_a_k = randi([0 1], p.N, 1);
+        bits_b_k = randi([0 1], p.N, 1);
+        [s_a_k, ~] = FskHelpers.fsk_modulate(bits_a_k, p.Fs, p.Rb, p.f1a, p.f0a);
+        [s_b_k, ~] = FskHelpers.fsk_modulate(bits_b_k, p.Fs, p.Rb, p.f1b, p.f0b);
+        s_mix_k = s_a_k + s_b_k;
+        s_mix_k = FskHelpers.add_awgn(s_mix_k, snr_list(k));
+
+        if use_ideal
+            bits_a_hat_k = FskHelpers.fsk_demod_discriminator(s_mix_k, p.Fs, p.Rb, p.f1a, p.f0a, bp_a, p.N, [], true);
+            bits_b_hat_k = FskHelpers.fsk_demod_discriminator(s_mix_k, p.Fs, p.Rb, p.f1b, p.f0b, bp_b, p.N, [], true);
+            err_a_ideal = err_a_ideal + sum(bits_a_hat_k ~= bits_a_k);
+            err_b_ideal = err_b_ideal + sum(bits_b_hat_k ~= bits_b_k);
+            total_ideal = total_ideal + p.N;
+        end
+        if use_real
+            [bits_a_hat_k, x_a_k] = FskHelpers.fsk_demod_energy(s_mix_k, p.Fs, p.Rb, bp_a_energy, lp_energy, false, p.N);
+            [bits_b_hat_k, x_b_k] = FskHelpers.fsk_demod_energy(s_mix_k, p.Fs, p.Rb, bp_b_energy, lp_energy, false, p.N);
+            [bits_a_ref_k, bits_a_hat_k] = align_bits(bits_a_k, bits_a_hat_k, x_a_k);
+            [bits_b_ref_k, bits_b_hat_k] = align_bits(bits_b_k, bits_b_hat_k, x_b_k);
+            err_a_real = err_a_real + sum(bits_a_hat_k ~= bits_a_ref_k);
+            err_b_real = err_b_real + sum(bits_b_hat_k ~= bits_b_ref_k);
+            total_a_real = total_a_real + numel(bits_a_ref_k);
+            total_b_real = total_b_real + numel(bits_b_ref_k);
+        end
+    end
+    if use_ideal
+        ber_ideal_curve(k) = 0.5 * (err_a_ideal + err_b_ideal) / total_ideal;
+    end
+    if use_real
+        ber_real_curve(k) = 0.5 * (err_a_real / total_a_real + err_b_real / total_b_real);
+    end
+end
+
+figure;
+hold on;
+if use_ideal
+    semilogy(snr_list, ber_ideal_curve, '-o', 'LineWidth', 1.2);
+end
+if use_real
+    semilogy(snr_list, ber_real_curve, '-s', 'LineWidth', 1.2);
+end
+grid on;
+xlabel('信噪比(dB)'); ylabel('误码率');
+if use_ideal && use_real
+    legend('零相位(理想)', '因果(现实)');
+elseif use_ideal
+    legend('零相位(理想)');
+else
+    legend('因果(现实)');
+end
+title('任务3：误码率-信噪比曲线');
 end
 
 function [bits_ref, bits_hat_adj] = align_bits(bits_ref, bits_hat, metric)
