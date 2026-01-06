@@ -1,10 +1,10 @@
 function task2(p, bits, s)
 % 任务2：对任务1的FSK信号做检测，看看能不能把比特找回来
 bp = FskHelpers.make_bandpass(p.Fs, 9e3, 11e3);
-FskHelpers.plot_filter_response(bp, p.Fs, '任务2：带通滤波器频率响应（10kHz）');
+FskHelpers.plot_filter_response(bp, p.Fs, 'Task 2: Bandpass Filter Response (10 kHz)');
 
 lp = FskHelpers.make_lowpass(p.Fs, p.Rb);
-FskHelpers.plot_filter_response(lp, p.Fs, '任务2：低通滤波器频率响应');
+FskHelpers.plot_filter_response(lp, p.Fs, 'Task 2: Low-pass Filter Response');
 
 % 先加噪，再走能量检测流程（先带通、再包络、再低通）
 s_noisy = FskHelpers.add_awgn(s, p.SNRdB);
@@ -45,8 +45,8 @@ t = (0:numel(s_noisy)-1)' / p.Fs;
 figure;
 plot(t(idx), s_noisy(idx));
 grid on;
-xlabel('时间(秒)'); ylabel('幅度');
-title('任务2：含噪FSK信号（前3位）');
+xlabel('Time (s)'); ylabel('Amplitude');
+title('Task 2: Noisy FSK Signal (First 3 Bits)');
 
 figure;
 if use_ideal && use_real
@@ -55,42 +55,42 @@ if use_ideal && use_real
     plot(t(idx), env_ideal(idx), 'b'); hold on;
     plot(t(idx), env_real(idx), 'r--');
     grid on;
-    xlabel('时间(秒)'); ylabel('包络');
-    legend('零相位(理想)', '因果(现实)');
-    title('任务2：包络对比（前3位）');
+    xlabel('Time (s)'); ylabel('Envelope');
+    legend('Zero-phase (ideal)', 'Causal (realistic)');
+    title('Task 2: Envelope Comparison (First 3 Bits)');
 
     subplot(2, 1, 2);
     plot(t(idx), lp_ideal(idx), 'b'); hold on;
     plot(t(idx), lp_real(idx), 'r--');
     grid on;
-    xlabel('时间(秒)'); ylabel('低通输出');
-    legend('零相位(理想)', '因果(现实)');
-    title('任务2：低通输出对比（前3位）');
+    xlabel('Time (s)'); ylabel('Low-pass Output');
+    legend('Zero-phase (ideal)', 'Causal (realistic)');
+    title('Task 2: Low-pass Output Comparison (First 3 Bits)');
 elseif use_ideal
     % 只有零相位就单独画
     plot(t(idx), env_ideal(idx), 'b');
     grid on;
-    xlabel('时间(秒)'); ylabel('包络');
-    title('任务2：包络（零相位，前3位）');
+    xlabel('Time (s)'); ylabel('Envelope');
+    title('Task 2: Envelope (Zero-phase, First 3 Bits)');
 elseif use_real
     % 只有因果就单独画
     plot(t(idx), env_real(idx), 'r');
     grid on;
-    xlabel('时间(秒)'); ylabel('包络');
-    title('任务2：包络（因果滤波，前3位）');
+    xlabel('Time (s)'); ylabel('Envelope');
+    title('Task 2: Envelope (Causal Filter, First 3 Bits)');
 end
 
 if use_real
     % 因果滤波的结果可视化
-    FskHelpers.plot_bits(bits_hat_real, p.Rb, '任务2：检测数据序列波形（因果滤波）');
-    FskHelpers.plot_bits_compare(bits_real_ref, bits_hat_real, p.Rb, '任务2：检测比特（因果滤波，延时已对齐）');
+    FskHelpers.plot_bits(bits_hat_real, p.Rb, 'Task 2: Detected Bit Sequence (Causal Filter)');
+    FskHelpers.plot_bits_compare(bits_real_ref, bits_hat_real, p.Rb, 'Task 2: Detected Bits (Causal Filter, Delay Aligned)');
     bits_str = char(bits_hat_real' + '0');
     fprintf('任务2检测数据序列(filter): ...%s...\n', bits_str);
 end
 if use_ideal && ~use_real
     % 只跑零相位时的可视化
-    FskHelpers.plot_bits(bits_hat_ideal, p.Rb, '任务2：检测数据序列波形（零相位）');
-    FskHelpers.plot_bits_compare(bits, bits_hat_ideal, p.Rb, '任务2：检测比特（零相位）');
+    FskHelpers.plot_bits(bits_hat_ideal, p.Rb, 'Task 2: Detected Bit Sequence (Zero-phase)');
+    FskHelpers.plot_bits_compare(bits, bits_hat_ideal, p.Rb, 'Task 2: Detected Bits (Zero-phase)');
     bits_str = char(bits_hat_ideal' + '0');
     fprintf('任务2检测数据序列(filtfilt): ...%s...\n', bits_str);
 end
@@ -161,15 +161,15 @@ if use_real
     semilogy(snr_list, ber_list_real, '-s', 'LineWidth', 1.2);
 end
 grid on;
-xlabel('信噪比(dB)'); ylabel('误码率');
+xlabel('SNR (dB)'); ylabel('BER');
 if use_ideal && use_real
-    legend('零相位(理想)', '因果(现实)');
+    legend('Zero-phase (ideal)', 'Causal (realistic)');
 elseif use_ideal
-    legend('零相位(理想)');
+    legend('Zero-phase (ideal)');
 else
-    legend('因果(现实)');
+    legend('Causal (realistic)');
 end
-title('任务2：误码率-信噪比曲线');
+title('Task 2: BER vs. SNR');
 end
 
 function [bits_ref, bits_hat_adj] = align_bits(bits_ref, bits_hat, metric)

@@ -4,21 +4,21 @@ bits_a = randi([0 1], p.N, 1);
 bits_b = randi([0 1], p.N, 1);
 
 % 先看两路随机比特
-FskHelpers.plot_bits(bits_a, p.Rb, '任务3：信号A随机比特');
-FskHelpers.plot_bits(bits_b, p.Rb, '任务3：信号B随机比特');
+FskHelpers.plot_bits(bits_a, p.Rb, 'Task 3: Signal A Random Bits');
+FskHelpers.plot_bits(bits_b, p.Rb, 'Task 3: Signal B Random Bits');
 
 % 各自调制成FSK
 [s_a, t_a] = FskHelpers.fsk_modulate(bits_a, p.Fs, p.Rb, p.f1a, p.f0a);
 [s_b, t_b] = FskHelpers.fsk_modulate(bits_b, p.Fs, p.Rb, p.f1b, p.f0b);
 
 % 单独看看两路的FSK长啥样
-FskHelpers.plot_fsk(t_a, s_a, '任务3：FSK信号A（10/12kHz）');
-FskHelpers.plot_fsk(t_b, s_b, '任务3：FSK信号B（6/8kHz）');
+FskHelpers.plot_fsk(t_a, s_a, 'Task 3: FSK Signal A (10/12 kHz)');
+FskHelpers.plot_fsk(t_b, s_b, 'Task 3: FSK Signal B (6/8 kHz)');
 
 % 叠加并加噪
 s_mix = s_a + s_b;
 s_mix = FskHelpers.add_awgn(s_mix, p.SNRdB);
-FskHelpers.plot_fsk(t_a, s_mix, '任务3：叠加后的FSK信号');
+FskHelpers.plot_fsk(t_a, s_mix, 'Task 3: Combined FSK Signal');
 
 % 分别给A/B做带通，最后统一低通
 bp_a = FskHelpers.make_bandpass(p.Fs, 9e3, 13e3);
@@ -41,12 +41,12 @@ if ~use_ideal && ~use_real
 end
 
 if use_ideal
-    FskHelpers.plot_filter_response(bp_a, p.Fs, '任务3：信号A带通滤波器频率响应');
-    FskHelpers.plot_filter_response(bp_b, p.Fs, '任务3：信号B带通滤波器频率响应');
+    FskHelpers.plot_filter_response(bp_a, p.Fs, 'Task 3: Signal A Bandpass Filter Response');
+    FskHelpers.plot_filter_response(bp_b, p.Fs, 'Task 3: Signal B Bandpass Filter Response');
 end
 if use_real
-    FskHelpers.plot_filter_response(bp_a_energy, p.Fs, '任务3：信号A能量检测带通响应（10kHz）');
-    FskHelpers.plot_filter_response(bp_b_energy, p.Fs, '任务3：信号B能量检测带通响应（6kHz）');
+    FskHelpers.plot_filter_response(bp_a_energy, p.Fs, 'Task 3: Signal A Energy Bandpass Response (10 kHz)');
+    FskHelpers.plot_filter_response(bp_b_energy, p.Fs, 'Task 3: Signal B Energy Bandpass Response (6 kHz)');
 end
 
 if use_ideal
@@ -68,16 +68,16 @@ end
 
 if use_real
     % 因果滤波的可视化
-    FskHelpers.plot_bits(bits_a_hat_real, p.Rb, '任务3：信号A检测数据序列波形（因果滤波）');
-    FskHelpers.plot_bits(bits_b_hat_real, p.Rb, '任务3：信号B检测数据序列波形（因果滤波）');
-    FskHelpers.plot_bits_compare(bits_a_ref, bits_a_hat_real, p.Rb, '任务3：信号A检测比特（因果滤波，延时已对齐）');
-    FskHelpers.plot_bits_compare(bits_b_ref, bits_b_hat_real, p.Rb, '任务3：信号B检测比特（因果滤波，延时已对齐）');
+    FskHelpers.plot_bits(bits_a_hat_real, p.Rb, 'Task 3: Signal A Detected Bit Sequence (Causal Filter)');
+    FskHelpers.plot_bits(bits_b_hat_real, p.Rb, 'Task 3: Signal B Detected Bit Sequence (Causal Filter)');
+    FskHelpers.plot_bits_compare(bits_a_ref, bits_a_hat_real, p.Rb, 'Task 3: Signal A Detected Bits (Causal Filter, Delay Aligned)');
+    FskHelpers.plot_bits_compare(bits_b_ref, bits_b_hat_real, p.Rb, 'Task 3: Signal B Detected Bits (Causal Filter, Delay Aligned)');
 elseif use_ideal
     % 零相位滤波的可视化
-    FskHelpers.plot_bits(bits_a_hat_ideal, p.Rb, '任务3：信号A检测数据序列波形（零相位）');
-    FskHelpers.plot_bits(bits_b_hat_ideal, p.Rb, '任务3：信号B检测数据序列波形（零相位）');
-    FskHelpers.plot_bits_compare(bits_a, bits_a_hat_ideal, p.Rb, '任务3：信号A检测比特（零相位）');
-    FskHelpers.plot_bits_compare(bits_b, bits_b_hat_ideal, p.Rb, '任务3：信号B检测比特（零相位）');
+    FskHelpers.plot_bits(bits_a_hat_ideal, p.Rb, 'Task 3: Signal A Detected Bit Sequence (Zero-phase)');
+    FskHelpers.plot_bits(bits_b_hat_ideal, p.Rb, 'Task 3: Signal B Detected Bit Sequence (Zero-phase)');
+    FskHelpers.plot_bits_compare(bits_a, bits_a_hat_ideal, p.Rb, 'Task 3: Signal A Detected Bits (Zero-phase)');
+    FskHelpers.plot_bits_compare(bits_b, bits_b_hat_ideal, p.Rb, 'Task 3: Signal B Detected Bits (Zero-phase)');
 end
 
 % 打印一下检测到的比特，眼睛扫一眼就知道对不对
@@ -166,15 +166,15 @@ if use_real
     semilogy(snr_list, ber_real_curve, '-s', 'LineWidth', 1.2);
 end
 grid on;
-xlabel('信噪比(dB)'); ylabel('误码率');
+xlabel('SNR (dB)'); ylabel('BER');
 if use_ideal && use_real
-    legend('零相位(理想)', '因果(现实)');
+    legend('Zero-phase (ideal)', 'Causal (realistic)');
 elseif use_ideal
-    legend('零相位(理想)');
+    legend('Zero-phase (ideal)');
 else
-    legend('因果(现实)');
+    legend('Causal (realistic)');
 end
-title('任务3：误码率-信噪比曲线');
+title('Task 3: BER vs. SNR');
 end
 
 function [bits_ref, bits_hat_adj] = align_bits(bits_ref, bits_hat, metric)

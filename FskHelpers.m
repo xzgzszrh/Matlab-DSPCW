@@ -94,7 +94,7 @@ classdef FskHelpers
             figure;
             stairs(t_bit, bits, 'LineWidth', 1.5);
             ylim([-0.2 1.2]); grid on;
-            xlabel('时间(秒)'); ylabel('比特');
+            xlabel('Time (s)'); ylabel('Bit');
             title(plot_title);
         end
 
@@ -106,8 +106,8 @@ classdef FskHelpers
             stairs(t_bit, bits_hat, 'LineWidth', 1.5); hold on;
             stairs(t_bit, bits, '--', 'LineWidth', 1.2);
             ylim([-0.2 1.2]); grid on;
-            xlabel('时间(秒)'); ylabel('比特');
-            legend('检测', '原始');
+            xlabel('Time (s)'); ylabel('Bit');
+            legend('Detected', 'Original');
             title(plot_title);
         end
 
@@ -116,7 +116,7 @@ classdef FskHelpers
             figure;
             plot(t, s);
             grid on;
-            xlabel('时间(秒)'); ylabel('幅度');
+            xlabel('Time (s)'); ylabel('Amplitude');
             title(plot_title);
         end
 
@@ -142,25 +142,25 @@ classdef FskHelpers
                 end
             end
             grid on;
-            xlabel('时间(秒)'); ylabel('幅度');
+            xlabel('Time (s)'); ylabel('Amplitude');
             title(plot_title);
-            legend('比特=1', '比特=0');
+            legend('Bit = 1', 'Bit = 0');
         end
 
         function plot_filter_response(filt_obj, Fs, plot_title)
-            % 画滤波器频响，顺手把坐标名改成中文
+            % 画滤波器频响，顺手把坐标名改成英文
             figure;
             freqz(filt_obj, 4096, Fs);
             title(plot_title);
             ax = findall(gcf, 'Type', 'axes');
             for k = 1:numel(ax)
-                xlabel(ax(k), '频率(Hz)');
+                xlabel(ax(k), 'Frequency (Hz)');
                 ylab = get(get(ax(k), 'YLabel'), 'String');
-                % MATLAB默认标签是英文，这里统一成中文
+                % MATLAB默认标签是英文，这里统一成英文
                 if ischar(ylab) && contains(ylab, 'Phase')
-                    ylabel(ax(k), '相位(弧度)');
+                    ylabel(ax(k), 'Phase (rad)');
                 else
-                    ylabel(ax(k), '幅度(dB)');
+                    ylabel(ax(k), 'Magnitude (dB)');
                 end
             end
         end
